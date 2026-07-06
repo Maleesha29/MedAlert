@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Box, Button, Card, CardContent, TextField, Typography, Stack, MenuItem, Divider, Alert } from '@mui/material';
+import { Box, Button, Card, CardContent, TextField, Typography, Stack, MenuItem, Divider, Alert, useTheme } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
 import { useAuth } from '../context/AuthContext';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const theme = useTheme();
   const { register, setError, error } = useAuth();
   const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'patient', password: '' });
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,7 @@ export default function RegisterPage() {
 
   return (
     <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-      <Card sx={{ width: '100%', maxWidth: 500, p: 1 }}>
+      <Card sx={{ width: '100%', maxWidth: 500, p: 1, bgcolor: theme.palette.mode === 'dark' ? theme.palette.background.paper : 'white' }}>
         <CardContent sx={{ p: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
             <PersonOutlineRoundedIcon color="primary" />

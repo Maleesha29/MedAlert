@@ -7,7 +7,6 @@ import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
-import AlarmWatcher from './components/AlarmWatcher';
 import { AuthProvider } from './context/AuthContext';
 
 const getTheme = (mode) =>
@@ -16,21 +15,46 @@ const getTheme = (mode) =>
       mode,
       primary: { main: '#2563eb' },
       secondary: { main: '#0f766e' },
+      success: { main: '#16a34a' },
+      warning: { main: '#f59e0b' },
       background: {
-        default: mode === 'dark' ? '#020617' : '#f8fafc',
-        paper: mode === 'dark' ? '#0f172a' : '#ffffff'
+        default: mode === 'dark' ? '#020617' : '#f5f7fb',
+        paper: mode === 'dark' ? '#111827' : '#ffffff'
+      },
+      text: {
+        primary: mode === 'dark' ? '#f9fafb' : '#0f172a',
+        secondary: mode === 'dark' ? '#cbd5e1' : '#475569'
       }
     },
-    shape: { borderRadius: 16 },
+    shape: { borderRadius: 14 },
     typography: {
-      fontFamily: 'Inter, Roboto, sans-serif'
+      fontFamily: 'Inter, Roboto, sans-serif',
+      button: { textTransform: 'none', fontWeight: 600 }
     },
     components: {
       MuiCard: {
         styleOverrides: {
           root: {
-            boxShadow: '0 12px 40px rgba(15, 23, 42, 0.08)'
+            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)',
+            border: '1px solid rgba(148, 163, 184, 0.18)'
           }
+        }
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 999,
+            textTransform: 'none',
+            boxShadow: 'none'
+          },
+          containedPrimary: {
+            boxShadow: 'none'
+          }
+        }
+      },
+      MuiTextField: {
+        defaultProps: {
+          variant: 'outlined'
         }
       }
     }

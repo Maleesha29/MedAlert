@@ -44,7 +44,7 @@ export default function Header({ mode, onToggleMode }) {
   };
 
   return (
-    <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
+    <AppBar position="static" color="primary" elevation={0} sx={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters sx={{ py: 1 }}>
           {/* Logo + title navigates to dashboard */}
@@ -52,10 +52,10 @@ export default function Header({ mode, onToggleMode }) {
             onClick={() => navigate('/')}
             sx={{ display: 'flex', alignItems: 'center', gap: 1.2, flexGrow: 1, cursor: 'pointer' }}
           >
-            <MedicationRoundedIcon color="primary" />
+            <MedicationRoundedIcon sx={{ color: 'white' }} />
             <Box>
-              <Typography variant="h6" fontWeight={700}>MedAlert</Typography>
-              <Typography variant="caption" color="text.secondary">Smart medicine companion</Typography>
+              <Typography variant="h6" fontWeight={700} sx={{ color: 'white' }}>MedAlert</Typography>
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.85)' }}>Smart medicine companion</Typography>
             </Box>
           </Box>
 
@@ -65,18 +65,18 @@ export default function Header({ mode, onToggleMode }) {
                 key={item.to}
                 component={Link}
                 to={item.to}
-                color={location.pathname === item.to ? 'primary' : 'inherit'}
-                sx={{ borderRadius: 999, px: 1.5, fontWeight: 600 }}
+                color={location.pathname === item.to ? 'secondary' : 'inherit'}
+                sx={{ borderRadius: 999, px: 1.5, fontWeight: 600, color: 'white' }}
               >
                 {item.label}
               </Button>
             ))}
             {!user && (
               <>
-                <Button component={Link} to="/login" color={location.pathname === '/login' ? 'primary' : 'inherit'} sx={{ borderRadius: 999, px: 1.5, fontWeight: 600 }}>
+                <Button component={Link} to="/login" color={location.pathname === '/login' ? 'secondary' : 'inherit'} sx={{ borderRadius: 999, px: 1.5, fontWeight: 600, color: 'white' }}>
                   Login
                 </Button>
-                <Button component={Link} to="/register" color={location.pathname === '/register' ? 'primary' : 'inherit'} sx={{ borderRadius: 999, px: 1.5, fontWeight: 600 }}>
+                <Button component={Link} to="/register" color={location.pathname === '/register' ? 'secondary' : 'inherit'} sx={{ borderRadius: 999, px: 1.5, fontWeight: 600, color: 'white' }}>
                   Register
                 </Button>
               </>

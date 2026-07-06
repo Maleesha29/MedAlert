@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Box, Button, Card, CardContent, TextField, Typography, Stack, Checkbox, FormControlLabel, Divider, Alert } from '@mui/material';
+import { Box, Button, Card, CardContent, TextField, Typography, Stack, Checkbox, FormControlLabel, Divider, Alert, useTheme } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const theme = useTheme();
   const { login, setError, error } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,7 @@ export default function LoginPage() {
 
   return (
     <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-      <Card sx={{ width: '100%', maxWidth: 460, p: 1 }}>
+      <Card sx={{ width: '100%', maxWidth: 460, p: 1, bgcolor: theme.palette.mode === 'dark' ? theme.palette.background.paper : 'white' }}>
         <CardContent sx={{ p: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
             <LockOutlinedIcon color="primary" />
