@@ -7,6 +7,7 @@ import BatteryChargingFullRoundedIcon from '@mui/icons-material/BatteryChargingF
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import MedicineManager from '../components/MedicineManager';
 import AlarmManager from '../components/AlarmManager';
+import AlarmWatcher from '../components/AlarmWatcher';
 
 const schedule = [
   { time: '08:30', name: 'Paracetamol', compartment: 'Compartment 1' },
@@ -99,6 +100,9 @@ export default function DashboardPage() {
         </Grid>
         <Grid item xs={12}>
           <AlarmManager />
+        </Grid>
+        <Grid item xs={12}>
+          <AlarmWatcher />
         </Grid>
         <Grid item xs={12} lg={7}>
           <Card>

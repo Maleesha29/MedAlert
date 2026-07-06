@@ -31,6 +31,24 @@ router.put('/:id', protect, async (req, res, next) => {
   }
 });
 
+router.post('/:id/taken', protect, async (req, res, next) => {
+  try {
+    const alarm = await Alarm.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
+      { status: 'completed' },
+      { new: true }
+    );
+
+    if (!alarm) {
+      return res.status(404).json({ success: false, message: 'Alarm not found' });
+    }
+
+    res.json({ success: true, alarm });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.delete('/:id', protect, async (req, res, next) => {
   try {
     await Alarm.findOneAndDelete({ _id: req.params.id, user: req.user._id });
