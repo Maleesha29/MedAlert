@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Box, Button, Card, CardContent, Chip, Collapse, Grid, Stack, Switch, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Card, CardContent, Chip, Collapse, Grid, MenuItem, Stack, Switch, TextField, Typography } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import AlarmRoundedIcon from '@mui/icons-material/AlarmRounded';
@@ -10,6 +10,7 @@ const initialForm = {
   time: '08:30',
   enabled: true,
   snoozeDuration: 5,
+  medicine: '',
   medicineCompartment: 1,
   notes: ''
 };
@@ -19,6 +20,7 @@ export default function AlarmManager() {
   const [message, setMessage] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [medicines, setMedicines] = useState([]);
 
   const loadAlarms = async () => {
     try {
@@ -29,12 +31,25 @@ export default function AlarmManager() {
     }
   };
 
-  useEffect(() => { loadAlarms(); }, []);
+  const loadMedicines = async () => {
+    try {
+      const { data } = await api.get('/medicines');
+      setMedicines(data.medicines || []);
+    } catch {
+      setMessage('Unable to load medicines.');
+    }
+  };
+
+  useEffect(() => {
+    loadAlarms();
+    loadMedicines();
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await api.post('/alarms', form);
+      const { data } = await api.post('/alarms', form);
+      setAlarms((prev) => [data.alarm, ...prev]);
       setMessage('Alarm saved successfully.');
       setForm(initialForm);
       setShowForm(false);
@@ -99,6 +114,30 @@ export default function AlarmManager() {
                   <TextField fullWidth label="Snooze duration (min)" type="number" value={form.snoozeDuration} onChange={(e) => setForm({ ...form, snoozeDuration: Number(e.target.value) })} required />
                 </Grid>
                 <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    select
+                    label="Select medicine"
+                    value={form.medicine}
+                    onChange={(e) => {
+                      const selectedMedicine = medicines.find((medicine) => medicine._id === e.target.value);
+                      setForm({
+                        ...form,
+                        medicine: e.target.value,
+                        medicineCompartment: selectedMedicine?.compartment || form.medicineCompartment
+                      });
+                    }}
+                    helperText={form.medicine ? 'Selected medicine stock will be reduced when you confirm the alarm.' : ''}
+                  >
+                    <MenuItem value="">None</MenuItem>
+                    {medicines.map((medicine) => (
+                      <MenuItem key={medicine._id} value={medicine._id} disabled={medicine.remainingPillCount <= 0}>
+                        {medicine.name} · {medicine.remainingPillCount} left
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={6}>
                   <TextField fullWidth label="Medicine compartment" type="number" value={form.medicineCompartment} onChange={(e) => setForm({ ...form, medicineCompartment: Number(e.target.value) })} required />
                 </Grid>
                 <Grid item xs={12}>
@@ -130,6 +169,9 @@ export default function AlarmManager() {
                   <Box>
                     <Typography fontWeight={700}>{alarm.name}</Typography>
                     <Typography variant="body2" color="text.secondary">Time: {alarm.time} · Compartment {alarm.medicineCompartment}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {alarm.medicine?.name ? `Medicine: ${alarm.medicine.name}` : 'No linked medicine'}
+                    </Typography>
                     <Typography variant="body2" color="text.secondary">{alarm.notes || 'No notes added'}</Typography>
                   </Box>
                   <Stack direction="row" spacing={1} alignItems="center">

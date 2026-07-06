@@ -122,10 +122,17 @@ export default function AlarmWatcher() {
   const handleTaken = async () => {
     if (!current) return;
     try {
-      // Adjust this endpoint to whatever your backend exposes for logging a dose
       await api.post(`/alarms/${current._id}/taken`, { takenAt: new Date().toISOString() });
-    } catch {
-      // Even if logging fails server-side, still clear the alarm locally
+    } catch (error) {
+      if (error?.response?.status !== 404) {
+        console.error('Unable to mark alarm as taken', error);
+      } else {
+        try {
+          await api.post(`/alarms/${current._id}/mark-taken`, { takenAt: new Date().toISOString() });
+        } catch (fallbackError) {
+          console.error('Unable to mark alarm as taken via fallback route', fallbackError);
+        }
+      }
     }
     dismissCurrent();
   };
@@ -182,6 +189,9 @@ export default function AlarmWatcher() {
             <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 4 }}>
               <Chip label={current.time} sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
               <Chip label={`Compartment ${current.medicineCompartment}`} sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
+              {current.medicine?.name && (
+                <Chip label={current.medicine.name} sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
+              )}
             </Stack>
             {current.notes && (
               <Typography sx={{ opacity: 0.9, mb: 4 }}>{current.notes}</Typography>

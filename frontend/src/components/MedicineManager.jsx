@@ -41,11 +41,12 @@ export default function MedicineManager() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await api.post('/medicines', form);
+      const { data } = await api.post('/medicines', form);
+      setMedicines((prev) => [data.medicine, ...prev]);
       setMessage('Medicine added successfully.');
       setForm(initialForm);
       setShowForm(false);
-      loadMedicines();
+      await loadMedicines();
     } catch {
       setMessage('Unable to add medicine.');
     }
@@ -71,10 +72,11 @@ export default function MedicineManager() {
     if (!editTarget) return;
     setSaving(true);
     try {
-      await api.put(`/medicines/${editTarget._id}`, editForm);
+      const { data } = await api.put(`/medicines/${editTarget._id}`, editForm);
+      setMedicines((prev) => prev.map((medicine) => (medicine._id === data.medicine._id ? data.medicine : medicine)));
       setMessage('Inventory updated successfully.');
       closeEdit();
-      loadMedicines();
+      await loadMedicines();
     } catch {
       setMessage('Unable to update inventory.');
     } finally {
@@ -94,9 +96,10 @@ export default function MedicineManager() {
     setDeleting(true);
     try {
       await api.delete(`/medicines/${deleteTarget._id}`);
+      setMedicines((prev) => prev.filter((medicine) => medicine._id !== deleteTarget._id));
       setMessage('Medicine deleted.');
       setDeleteTarget(null);
-      loadMedicines();
+      await loadMedicines();
     } catch {
       setMessage('Unable to delete medicine.');
     } finally {

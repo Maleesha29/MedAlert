@@ -6,6 +6,7 @@ const alarmSchema = new mongoose.Schema({
   time: { type: String, required: true },
   enabled: { type: Boolean, default: true },
   snoozeDuration: { type: Number, default: 5 },
+  medicine: { type: mongoose.Schema.Types.ObjectId, ref: 'Medicine' },
   medicineCompartment: { type: Number, required: true },
   notes: { type: String },
   snoozesUsed: { type: Number, default: 0 },
