@@ -47,6 +47,11 @@ export default function AlarmManager() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    // client-side validation
+    const nameRe = /^[A-Za-z\s]+$/;
+    if (!nameRe.test(form.name)) return setMessage('Alarm name may only contain letters and spaces.');
+    if (!/^\d{2}:\d{2}$/.test(form.time)) return setMessage('Time must be in HH:MM format.');
+    if (form.snoozeDuration < 0) return setMessage('Snooze duration cannot be negative.');
     try {
       const { data } = await api.post('/alarms', form);
       setAlarms((prev) => [data.alarm, ...prev]);

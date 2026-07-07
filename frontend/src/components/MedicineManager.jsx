@@ -40,6 +40,12 @@ export default function MedicineManager() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    // client-side validation
+    const nameRe = /^[A-Za-z\s]+$/;
+    if (!nameRe.test(form.name)) return setMessage('Medicine name may only contain letters and spaces.');
+    if (form.compartment < 1) return setMessage('Compartment must be at least 1.');
+    if (form.initialPillCount < 0) return setMessage('Initial pill count cannot be negative.');
+    if (form.remainingPillCount < 0) return setMessage('Remaining pill count cannot be negative.');
     try {
       let data;
       if (form.imageFile) {

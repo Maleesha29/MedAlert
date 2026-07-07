@@ -38,6 +38,16 @@ export default function ProfilePage() {
 
   const handleSave = async (event) => {
     event.preventDefault();
+    // client-side validation
+    const nameRe = /^[A-Za-z\s]+$/;
+    const phoneRe = /^0\d{9}$/;
+    const emailRe = /.+@.+\..+/;
+    if (!nameRe.test(form.fullName)) return setMessage('Full name may only contain letters and spaces.');
+    if (form.phoneNumber && !phoneRe.test(form.phoneNumber)) return setMessage('Phone must start with 0 and be 10 digits.');
+    if (form.caregiverName && !nameRe.test(form.caregiverName)) return setMessage('Caregiver name may only contain letters and spaces.');
+    if (form.caregiverPhone && !phoneRe.test(form.caregiverPhone)) return setMessage('Caregiver phone must start with 0 and be 10 digits.');
+    if (form.caregiverEmail && !emailRe.test(form.caregiverEmail)) return setMessage('Caregiver email is invalid.');
+    if (form.address && form.address.length < 5) return setMessage('Address must be at least 5 characters.');
     try {
       const { data } = await api.put('/auth/profile', {
         fullName: form.fullName,
