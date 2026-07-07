@@ -126,32 +126,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} lg={5}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>Care insights</Typography>
-              <Stack spacing={2}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">Compliance</Typography>
-                  <Typography variant="h5" fontWeight={700}>92%</Typography>
-                  <LinearProgress value={92} sx={{ mt: 1, height: 8, borderRadius: 999 }} />
-                </Box>
-                <Divider />
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <BatteryChargingFullRoundedIcon color="primary" />
-                    <Typography>Battery health</Typography>
-                  </Stack>
-                  <Typography fontWeight={700}>86%</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography color="text.secondary">Missed doses</Typography>
-                  <Typography fontWeight={700}>1 this week</Typography>
-                </Box>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
+        
       </Grid>
     </Box>
   );
