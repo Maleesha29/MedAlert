@@ -10,6 +10,7 @@ import deviceRoutes from './routes/deviceRoutes.js';
 import medicineRoutes from './routes/medicineRoutes.js';
 import alarmRoutes from './routes/alarmRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import path from 'path';
 
 dotenv.config();
 
@@ -28,6 +29,9 @@ app.use('/api/device', deviceRoutes);
 app.use('/api/medicines', medicineRoutes);
 app.use('/api/alarms', alarmRoutes);
 app.use('/api/notifications', notificationRoutes);
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use((err, _req, res, _next) => {
   console.error(err);

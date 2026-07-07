@@ -10,7 +10,7 @@ import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import api from '../services/api';
 
-const initialForm = { name: '', compartment: 1, initialPillCount: 30, remainingPillCount: 30, lowStockThreshold: 3, instructions: '' };
+const initialForm = { name: '', compartment: 1, initialPillCount: 30, remainingPillCount: 30, lowStockThreshold: 3, instructions: '', imageFile: null };
 
 export default function MedicineManager() {
   const [medicines, setMedicines] = useState([]);
@@ -41,7 +41,22 @@ export default function MedicineManager() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const { data } = await api.post('/medicines', form);
+      let data;
+      if (form.imageFile) {
+        const fd = new FormData();
+        fd.append('image', form.imageFile);
+        fd.append('name', form.name);
+        fd.append('compartment', form.compartment);
+        fd.append('initialPillCount', form.initialPillCount);
+        fd.append('remainingPillCount', form.remainingPillCount);
+        fd.append('lowStockThreshold', form.lowStockThreshold);
+        fd.append('instructions', form.instructions);
+        const res = await api.post('/medicines', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        data = res.data;
+      } else {
+        const res = await api.post('/medicines', form);
+        data = res.data;
+      }
       setMedicines((prev) => [data.medicine, ...prev]);
       setMessage('Medicine added successfully.');
       setForm(initialForm);
@@ -139,6 +154,15 @@ export default function MedicineManager() {
                 <Grid item xs={12} sm={6}>
                   <TextField fullWidth label="Compartment" type="number" value={form.compartment} onChange={(e) => setForm({ ...form, compartment: Number(e.target.value) })} required />
                 </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <input
+                      accept="image/*"
+                      id="medicine-image"
+                      type="file"
+                      onChange={(e) => setForm({ ...form, imageFile: e.target.files && e.target.files[0] })}
+                      style={{ display: 'block' }}
+                    />
+                  </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField fullWidth label="Initial pill count" type="number" value={form.initialPillCount} onChange={(e) => setForm({ ...form, initialPillCount: Number(e.target.value), remainingPillCount: Number(e.target.value) })} required />
                 </Grid>
@@ -167,10 +191,17 @@ export default function MedicineManager() {
             medicines.map((medicine) => (
               <Box key={medicine._id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1.5}>
-                  <Box>
-                    <Typography fontWeight={700}>{medicine.name}</Typography>
-                    <Typography variant="body2" color="text.secondary">Compartment {medicine.compartment}</Typography>
-                  </Box>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    {medicine.image ? (
+                      <img src={medicine.image} alt={medicine.name} style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8 }} />
+                    ) : (
+                      <MedicationRoundedIcon sx={{ fontSize: 36, opacity: 0.6 }} />
+                    )}
+                    <Box>
+                      <Typography fontWeight={700}>{medicine.name}</Typography>
+                      <Typography variant="body2" color="text.secondary">Compartment {medicine.compartment}</Typography>
+                    </Box>
+                  </Stack>
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Chip label={`${medicine.remainingPillCount} left`} color={medicine.remainingPillCount <= medicine.lowStockThreshold ? 'warning' : 'success'} />
                     <IconButton size="small" color="primary" onClick={() => openEdit(medicine)} aria-label="Update inventory">
