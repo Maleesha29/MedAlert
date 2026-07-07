@@ -16,6 +16,7 @@ export default function MedicineManager() {
   const [medicines, setMedicines] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
   const [showForm, setShowForm] = useState(false);
 
   // Update inventory dialog state
@@ -38,14 +39,20 @@ export default function MedicineManager() {
 
   useEffect(() => { loadMedicines(); }, []);
 
+  useEffect(() => {
+    if (!message) return undefined;
+    const t = setTimeout(() => setMessage(''), 5000);
+    return () => clearTimeout(t);
+  }, [message]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     // client-side validation
     const nameRe = /^[A-Za-z\s]+$/;
-    if (!nameRe.test(form.name)) return setMessage('Medicine name may only contain letters and spaces.');
-    if (form.compartment < 1) return setMessage('Compartment must be at least 1.');
-    if (form.initialPillCount < 0) return setMessage('Initial pill count cannot be negative.');
-    if (form.remainingPillCount < 0) return setMessage('Remaining pill count cannot be negative.');
+    if (!nameRe.test(form.name)) { setMessageType('error'); return setMessage('Medicine name may only contain letters and spaces.'); }
+    if (form.compartment < 1) { setMessageType('error'); return setMessage('Compartment must be at least 1.'); }
+    if (form.initialPillCount < 0) { setMessageType('error'); return setMessage('Initial pill count cannot be negative.'); }
+    if (form.remainingPillCount < 0) { setMessageType('error'); return setMessage('Remaining pill count cannot be negative.'); }
     try {
       let data;
       if (form.imageFile) {
@@ -64,11 +71,15 @@ export default function MedicineManager() {
         data = res.data;
       }
       setMedicines((prev) => [data.medicine, ...prev]);
+      setMessageType('success');
       setMessage('Medicine added successfully.');
       setForm(initialForm);
       setShowForm(false);
       await loadMedicines();
+      // notify other components that medicines changed
+      try { window.dispatchEvent(new CustomEvent('medicines:changed')); } catch (e) {}
     } catch {
+      setMessageType('error');
       setMessage('Unable to add medicine.');
     }
   };
@@ -95,10 +106,13 @@ export default function MedicineManager() {
     try {
       const { data } = await api.put(`/medicines/${editTarget._id}`, editForm);
       setMedicines((prev) => prev.map((medicine) => (medicine._id === data.medicine._id ? data.medicine : medicine)));
+      setMessageType('success');
       setMessage('Inventory updated successfully.');
       closeEdit();
       await loadMedicines();
+      try { window.dispatchEvent(new CustomEvent('medicines:changed')); } catch (e) {}
     } catch {
+      setMessageType('error');
       setMessage('Unable to update inventory.');
     } finally {
       setSaving(false);
@@ -118,10 +132,13 @@ export default function MedicineManager() {
     try {
       await api.delete(`/medicines/${deleteTarget._id}`);
       setMedicines((prev) => prev.filter((medicine) => medicine._id !== deleteTarget._id));
+      setMessageType('success');
       setMessage('Medicine deleted.');
       setDeleteTarget(null);
       await loadMedicines();
+        try { window.dispatchEvent(new CustomEvent('medicines:changed')); } catch (e) {}
     } catch {
+      setMessageType('error');
       setMessage('Unable to delete medicine.');
     } finally {
       setDeleting(false);
@@ -147,7 +164,7 @@ export default function MedicineManager() {
           </Button>
         </Stack>
 
-        {message ? <Alert severity="success" sx={{ mb: 2 }} onClose={() => setMessage('')}>{message}</Alert> : null}
+        {message ? <Alert severity={messageType} sx={{ mb: 2 }} onClose={() => { setMessage(''); setMessageType('success'); }}>{message}</Alert> : null}
 
         <Collapse in={showForm} unmountOnExit>
           <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2.5, mb: 3, bgcolor: 'background.default' }}>

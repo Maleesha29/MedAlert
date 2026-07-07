@@ -8,6 +8,12 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
+  useEffect(() => {
+    if (!message) return undefined;
+    const t = setTimeout(() => setMessage(''), 5000);
+    return () => clearTimeout(t);
+  }, [message]);
   const [form, setForm] = useState({ fullName: '', age: '', gender: '', bloodGroup: '', phoneNumber: '', address: '', caregiverName: '', caregiverPhone: '', caregiverEmail: '' });
 
   useEffect(() => {
@@ -42,12 +48,12 @@ export default function ProfilePage() {
     const nameRe = /^[A-Za-z\s]+$/;
     const phoneRe = /^0\d{9}$/;
     const emailRe = /.+@.+\..+/;
-    if (!nameRe.test(form.fullName)) return setMessage('Full name may only contain letters and spaces.');
-    if (form.phoneNumber && !phoneRe.test(form.phoneNumber)) return setMessage('Phone must start with 0 and be 10 digits.');
-    if (form.caregiverName && !nameRe.test(form.caregiverName)) return setMessage('Caregiver name may only contain letters and spaces.');
-    if (form.caregiverPhone && !phoneRe.test(form.caregiverPhone)) return setMessage('Caregiver phone must start with 0 and be 10 digits.');
-    if (form.caregiverEmail && !emailRe.test(form.caregiverEmail)) return setMessage('Caregiver email is invalid.');
-    if (form.address && form.address.length < 5) return setMessage('Address must be at least 5 characters.');
+    if (!nameRe.test(form.fullName)) { setMessageType('error'); return setMessage('Full name may only contain letters and spaces.'); }
+    if (form.phoneNumber && !phoneRe.test(form.phoneNumber)) { setMessageType('error'); return setMessage('Phone must start with 0 and be 10 digits.'); }
+    if (form.caregiverName && !nameRe.test(form.caregiverName)) { setMessageType('error'); return setMessage('Caregiver name may only contain letters and spaces.'); }
+    if (form.caregiverPhone && !phoneRe.test(form.caregiverPhone)) { setMessageType('error'); return setMessage('Caregiver phone must start with 0 and be 10 digits.'); }
+    if (form.caregiverEmail && !emailRe.test(form.caregiverEmail)) { setMessageType('error'); return setMessage('Caregiver email is invalid.'); }
+    if (form.address && form.address.length < 5) { setMessageType('error'); return setMessage('Address must be at least 5 characters.'); }
     try {
       const { data } = await api.put('/auth/profile', {
         fullName: form.fullName,
@@ -74,9 +80,11 @@ export default function ProfilePage() {
         caregiverPhone: user.caregiverPhone || '',
         caregiverEmail: user.caregiverEmail || ''
       });
+      setMessageType('success');
       setMessage('Profile updated successfully.');
       navigate('/');
     } catch {
+      setMessageType('error');
       setMessage('Unable to save profile.');
     }
   };
@@ -103,7 +111,7 @@ export default function ProfilePage() {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               Keep your personal and care information up to date for accurate reminders and support.
             </Typography>
-            {message ? <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert> : null}
+            {message ? <Alert severity={messageType} sx={{ mb: 2 }} onClose={() => { setMessage(''); setMessageType('success'); }}>{message}</Alert> : null}
             <Stack component="form" spacing={2} onSubmit={handleSave}>
               <TextField label="Full name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} fullWidth />
               <Grid container spacing={2}>

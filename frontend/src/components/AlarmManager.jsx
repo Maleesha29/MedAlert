@@ -17,16 +17,18 @@ const initialForm = {
 
 export default function AlarmManager() {
   const [alarms, setAlarms] = useState([]);
-  const [message, setMessage] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState(initialForm);
   const [medicines, setMedicines] = useState([]);
+  const [form, setForm] = useState(initialForm);
+  const [showForm, setShowForm] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
 
   const loadAlarms = async () => {
     try {
       const { data } = await api.get('/alarms');
       setAlarms(data.alarms || []);
     } catch {
+      setMessageType('error');
       setMessage('Unable to load alarms.');
     }
   };
@@ -36,6 +38,7 @@ export default function AlarmManager() {
       const { data } = await api.get('/medicines');
       setMedicines(data.medicines || []);
     } catch {
+      setMessageType('error');
       setMessage('Unable to load medicines.');
     }
   };
@@ -43,49 +46,74 @@ export default function AlarmManager() {
   useEffect(() => {
     loadAlarms();
     loadMedicines();
+    const onMedsChanged = () => loadMedicines();
+    window.addEventListener('medicines:changed', onMedsChanged);
+    const onAlarmsChanged = () => loadAlarms();
+    window.addEventListener('alarms:changed', onAlarmsChanged);
+    return () => {
+      window.removeEventListener('medicines:changed', onMedsChanged);
+      window.removeEventListener('alarms:changed', onAlarmsChanged);
+    };
   }, []);
+
+  useEffect(() => {
+    if (!message) return undefined;
+    const t = setTimeout(() => setMessage(''), 5000);
+    return () => clearTimeout(t);
+  }, [message]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // client-side validation
     const nameRe = /^[A-Za-z\s]+$/;
-    if (!nameRe.test(form.name)) return setMessage('Alarm name may only contain letters and spaces.');
-    if (!/^\d{2}:\d{2}$/.test(form.time)) return setMessage('Time must be in HH:MM format.');
-    if (form.snoozeDuration < 0) return setMessage('Snooze duration cannot be negative.');
+    if (!nameRe.test(form.name)) { setMessageType('error'); setMessage('Alarm name may only contain letters and spaces.'); return; }
+    if (!/^\d{2}:\d{2}$/.test(form.time)) { setMessageType('error'); setMessage('Time must be in HH:MM format.'); return; }
+    if (form.snoozeDuration < 0) { setMessageType('error'); setMessage('Snooze duration cannot be negative.'); return; }
+
     try {
       const { data } = await api.post('/alarms', form);
       setAlarms((prev) => [data.alarm, ...prev]);
+      setMessageType('success');
       setMessage('Alarm saved successfully.');
       setForm(initialForm);
       setShowForm(false);
       loadAlarms();
-    } catch {
-      setMessage('Unable to save alarm.');
+      try { window.dispatchEvent(new CustomEvent('alarms:changed')); } catch (e) {}
+    } catch (err) {
+      setMessageType('error');
+      setMessage(err?.response?.data?.message || 'Unable to save alarm.');
     }
   };
 
   const toggleAlarm = async (alarm) => {
     try {
       await api.put(`/alarms/${alarm._id}`, { ...alarm, enabled: !alarm.enabled });
+      setMessageType('success');
+      setMessage('Alarm updated.');
       loadAlarms();
-    } catch {
-      setMessage('Unable to update alarm state.');
+      try { window.dispatchEvent(new CustomEvent('alarms:changed')); } catch (e) {}
+    } catch (err) {
+      setMessageType('error');
+      setMessage(err?.response?.data?.message || 'Unable to update alarm state.');
     }
   };
 
   const removeAlarm = async (id) => {
     try {
       await api.delete(`/alarms/${id}`);
+      setMessageType('success');
       setMessage('Alarm removed.');
       loadAlarms();
-    } catch {
-      setMessage('Unable to delete alarm.');
+      try { window.dispatchEvent(new CustomEvent('alarms:changed')); } catch (e) {}
+    } catch (err) {
+      setMessageType('error');
+      setMessage(err?.response?.data?.message || 'Unable to delete alarm.');
     }
   };
 
   return (
     <Card>
       <CardContent>
+        {message ? <Alert severity={messageType} sx={{ mb: 2 }} onClose={() => { setMessage(''); setMessageType('success'); }}>{message}</Alert> : null}
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: showForm ? 2 : 0 }}>
           <Stack direction="row" spacing={1.5} alignItems="center">
             <AlarmRoundedIcon color="primary" />
@@ -101,8 +129,6 @@ export default function AlarmManager() {
             {showForm ? 'Cancel' : 'New alarm'}
           </Button>
         </Stack>
-
-        {message ? <Alert severity="success" sx={{ mb: 2 }} onClose={() => setMessage('')}>{message}</Alert> : null}
 
         <Collapse in={showForm} unmountOnExit>
           <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2.5, mb: 3, bgcolor: 'background.default' }}>
