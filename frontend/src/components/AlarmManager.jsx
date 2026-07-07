@@ -7,11 +7,11 @@ import api from '../services/api';
 
 const initialForm = {
   name: '',
-  time: '08:30',
+  time: '',
   enabled: true,
-  snoozeDuration: 5,
+  snoozeDuration: 0,
   medicine: '',
-  medicineCompartment: 1,
+  medicineCompartment: 0,
   notes: ''
 };
 

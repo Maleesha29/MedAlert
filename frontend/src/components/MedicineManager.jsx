@@ -10,7 +10,7 @@ import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import api from '../services/api';
 
-const initialForm = { name: '', compartment: 1, initialPillCount: 30, remainingPillCount: 30, lowStockThreshold: 3, instructions: '', imageFile: null };
+const initialForm = { name: '', compartment: 0, initialPillCount: 0, remainingPillCount: 0, lowStockThreshold: 0, instructions: '', imageFile: null };
 
 export default function MedicineManager() {
   const [medicines, setMedicines] = useState([]);
