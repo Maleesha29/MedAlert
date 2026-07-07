@@ -9,7 +9,12 @@ const patientSchema = new mongoose.Schema({
   profilePicture: { type: String },
   phoneNumber: { type: String },
   address: { type: String },
-  caregiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  caregiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  caregiverInfo: {
+    name: { type: String },
+    phone: { type: String },
+    email: { type: String }
+  }
 }, { timestamps: true });
 
 export default mongoose.model('Patient', patientSchema);

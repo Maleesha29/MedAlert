@@ -54,7 +54,10 @@ router.get('/me', protect, async (req, res, next) => {
         gender: patient?.gender || '',
         bloodGroup: patient?.bloodGroup || '',
         phoneNumber: patient?.phoneNumber || userData.phone || '',
-        address: patient?.address || ''
+        address: patient?.address || '',
+        caregiverName: patient?.caregiverInfo?.name || '',
+        caregiverPhone: patient?.caregiverInfo?.phone || '',
+        caregiverEmail: patient?.caregiverInfo?.email || ''
       }
     });
   } catch (error) {
@@ -64,7 +67,7 @@ router.get('/me', protect, async (req, res, next) => {
 
 router.put('/profile', protect, async (req, res, next) => {
   try {
-    const { fullName, age, gender, bloodGroup, phoneNumber, address } = req.body;
+    const { fullName, age, gender, bloodGroup, phoneNumber, address, caregiverName, caregiverPhone, caregiverEmail } = req.body;
     const user = await User.findById(req.user._id).select('-password');
 
     let patient = await Patient.findOne({ user: user._id });
@@ -92,6 +95,11 @@ router.put('/profile', protect, async (req, res, next) => {
       patient.phoneNumber = phoneNumber;
     }
     if (address !== undefined) patient.address = address;
+    // caregiver info
+    if (!patient.caregiverInfo) patient.caregiverInfo = {};
+    if (caregiverName !== undefined) patient.caregiverInfo.name = caregiverName;
+    if (caregiverPhone !== undefined) patient.caregiverInfo.phone = caregiverPhone;
+    if (caregiverEmail !== undefined) patient.caregiverInfo.email = caregiverEmail;
 
     await user.save();
     await patient.save();
@@ -106,6 +114,10 @@ router.put('/profile', protect, async (req, res, next) => {
         bloodGroup: patient.bloodGroup || '',
         phoneNumber: patient.phoneNumber || '',
         address: patient.address || ''
+        ,
+        caregiverName: patient.caregiverInfo?.name || '',
+        caregiverPhone: patient.caregiverInfo?.phone || '',
+        caregiverEmail: patient.caregiverInfo?.email || ''
       }
     });
   } catch (error) {

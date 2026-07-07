@@ -8,7 +8,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [message, setMessage] = useState('');
-  const [form, setForm] = useState({ fullName: '', age: '', gender: '', bloodGroup: '', phoneNumber: '', address: '' });
+  const [form, setForm] = useState({ fullName: '', age: '', gender: '', bloodGroup: '', phoneNumber: '', address: '', caregiverName: '', caregiverPhone: '', caregiverEmail: '' });
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -23,7 +23,10 @@ export default function ProfilePage() {
           gender: user.gender || '',
           bloodGroup: user.bloodGroup || '',
           phoneNumber: user.phoneNumber || user.phone || '',
-          address: user.address || ''
+          address: user.address || '',
+          caregiverName: user.caregiverName || '',
+          caregiverPhone: user.caregiverPhone || '',
+          caregiverEmail: user.caregiverEmail || ''
         });
       } catch {
         setMessage('Unable to load profile.');
@@ -42,7 +45,10 @@ export default function ProfilePage() {
         gender: form.gender,
         bloodGroup: form.bloodGroup,
         phoneNumber: form.phoneNumber,
-        address: form.address
+        address: form.address,
+        caregiverName: form.caregiverName,
+        caregiverPhone: form.caregiverPhone,
+        caregiverEmail: form.caregiverEmail
       });
 
       const user = data.user || {};
@@ -53,7 +59,10 @@ export default function ProfilePage() {
         gender: user.gender || '',
         bloodGroup: user.bloodGroup || '',
         phoneNumber: user.phoneNumber || user.phone || '',
-        address: user.address || ''
+        address: user.address || '',
+        caregiverName: user.caregiverName || '',
+        caregiverPhone: user.caregiverPhone || '',
+        caregiverEmail: user.caregiverEmail || ''
       });
       setMessage('Profile updated successfully.');
       navigate('/');
@@ -114,6 +123,18 @@ export default function ProfilePage() {
               </Grid>
               <TextField label="Phone number" value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} fullWidth />
               <TextField label="Address" multiline minRows={2} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} fullWidth />
+              <Typography variant="h6" fontWeight={700} sx={{ mt: 2 }}>Caregiver</Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField label="Caregiver name" value={form.caregiverName} onChange={(e) => setForm({ ...form, caregiverName: e.target.value })} fullWidth />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField label="Caregiver phone" value={form.caregiverPhone} onChange={(e) => setForm({ ...form, caregiverPhone: e.target.value })} fullWidth />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField label="Caregiver email" value={form.caregiverEmail} onChange={(e) => setForm({ ...form, caregiverEmail: e.target.value })} fullWidth />
+                </Grid>
+              </Grid>
               <Box>
                 <Button type="submit" variant="contained">Save profile</Button>
               </Box>
