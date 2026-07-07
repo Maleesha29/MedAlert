@@ -9,7 +9,6 @@ const initialForm = {
   name: '',
   time: '',
   enabled: true,
-  snoozeDuration: 0,
   medicine: '',
   medicineCompartment: 0,
   notes: ''
@@ -67,7 +66,7 @@ export default function AlarmManager() {
     const nameRe = /^[A-Za-z\s]+$/;
     if (!nameRe.test(form.name)) { setMessageType('error'); setMessage('Alarm name may only contain letters and spaces.'); return; }
     if (!/^\d{2}:\d{2}$/.test(form.time)) { setMessageType('error'); setMessage('Time must be in HH:MM format.'); return; }
-    if (form.snoozeDuration < 0) { setMessageType('error'); setMessage('Snooze duration cannot be negative.'); return; }
+    // snooze duration is selected at ring-time (5/10/15min), not stored on the alarm
 
     try {
       const { data } = await api.post('/alarms', form);
@@ -141,9 +140,7 @@ export default function AlarmManager() {
                 <Grid item xs={12} sm={6}>
                   <TextField fullWidth label="Time" type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} required InputLabelProps={{ shrink: true }} />
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField fullWidth label="Snooze duration (min)" type="number" value={form.snoozeDuration} onChange={(e) => setForm({ ...form, snoozeDuration: Number(e.target.value) })} required />
-                </Grid>
+                {/* snooze duration removed — choose snooze when the alarm rings */}
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth

@@ -135,11 +135,12 @@ export default function AlarmWatcher() {
       }
     }
     dismissCurrent();
+    // notify other components (medicine list) to refresh pill counts
+    try { window.dispatchEvent(new CustomEvent('medicines:changed')); } catch (e) {}
   };
 
-  const handleSnooze = () => {
+  const handleSnooze = (minutes) => {
     if (!current) return;
-    const minutes = current.snoozeDuration || 5;
     snoozedUntilRef.current[current._id] = dayjs().add(minutes, 'minute');
     dismissCurrent();
   };
@@ -212,14 +213,11 @@ export default function AlarmWatcher() {
               >
                 Yes, I took it
               </Button>
-              <Button
-                onClick={handleSnooze}
-                variant="outlined"
-                startIcon={<SnoozeRoundedIcon />}
-                sx={{ borderColor: 'rgba(255,255,255,0.6)', color: 'white', borderRadius: 999 }}
-              >
-                Snooze {current.snoozeDuration || 5} min
-              </Button>
+              <Stack direction="row" spacing={1.5} justifyContent="center">
+                <Button onClick={() => handleSnooze(5)} variant="outlined" startIcon={<SnoozeRoundedIcon />} sx={{ borderColor: 'rgba(255,255,255,0.6)', color: 'white', borderRadius: 999 }}>Snooze 5 min</Button>
+                <Button onClick={() => handleSnooze(10)} variant="outlined" startIcon={<SnoozeRoundedIcon />} sx={{ borderColor: 'rgba(255,255,255,0.6)', color: 'white', borderRadius: 999 }}>Snooze 10 min</Button>
+                <Button onClick={() => handleSnooze(15)} variant="outlined" startIcon={<SnoozeRoundedIcon />} sx={{ borderColor: 'rgba(255,255,255,0.6)', color: 'white', borderRadius: 999 }}>Snooze 15 min</Button>
+              </Stack>
             </Stack>
 
             {queue.length > 1 && (

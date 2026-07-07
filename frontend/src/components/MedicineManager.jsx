@@ -37,7 +37,12 @@ export default function MedicineManager() {
     }
   };
 
-  useEffect(() => { loadMedicines(); }, []);
+  useEffect(() => {
+    loadMedicines();
+    const onMedsChanged = () => loadMedicines();
+    window.addEventListener('medicines:changed', onMedsChanged);
+    return () => window.removeEventListener('medicines:changed', onMedsChanged);
+  }, []);
 
   useEffect(() => {
     if (!message) return undefined;

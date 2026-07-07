@@ -7,7 +7,6 @@ const alarmSchema = new mongoose.Schema({
   name: { type: String, required: true, match: [nameRegex, 'Alarm name may only contain letters and spaces'] },
   time: { type: String, required: true, validate: { validator: v => /^\d{2}:\d{2}$/.test(v), message: 'Time must be in HH:MM format' } },
   enabled: { type: Boolean, default: true },
-  snoozeDuration: { type: Number, default: 5, min: [0, 'Snooze duration cannot be negative'] },
   medicine: { type: mongoose.Schema.Types.ObjectId, ref: 'Medicine' },
   medicineCompartment: { type: Number, required: true, min: [1, 'Medicine compartment must be at least 1'] },
   notes: { type: String },
