@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Box } from '@mui/material';
+import { Card, CardContent, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Box, Button } from '@mui/material';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import dayjs from 'dayjs';
@@ -7,7 +7,7 @@ import api from '../services/api';
 
 export default function DoseHistory() {
   const [history, setHistory] = useState([]);
-
+  const [showAll, setShowAll] = useState(false);
   const loadHistory = async () => {
     try {
       const { data } = await api.get('/notifications/history');
@@ -34,7 +34,7 @@ export default function DoseHistory() {
           <Typography variant="body2" color="text.secondary">No dose history available.</Typography>
         ) : (
           <List sx={{ maxHeight: 400, overflow: 'auto', p: 0 }}>
-            {history.map((event) => {
+            {(showAll ? history : history.slice(0, 5)).map((event) => {
               const isTaken = event.type === 'dose_taken';
               return (
                 <ListItem key={event._id} sx={{ px: 0, py: 1, borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -64,6 +64,13 @@ export default function DoseHistory() {
               );
             })}
           </List>
+        )}
+        {history.length > 5 && (
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Button size="small" onClick={() => setShowAll(!showAll)}>
+              {showAll ? 'See less' : 'See more'}
+            </Button>
+          </Box>
         )}
       </CardContent>
     </Card>

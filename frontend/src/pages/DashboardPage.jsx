@@ -5,7 +5,6 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
 import MedicationRoundedIcon from '@mui/icons-material/MedicationRounded';
 import MonitorHeartRoundedIcon from '@mui/icons-material/MonitorHeartRounded';
-import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
 import BatteryChargingFullRoundedIcon from '@mui/icons-material/BatteryChargingFullRounded';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import MedicineManager from '../components/MedicineManager';
@@ -117,17 +116,12 @@ export default function DashboardPage() {
                 {dayjs().format('dddd, MMMM D, YYYY')} · {nextReminder ? `Next reminder is scheduled for ${fmtTime(nextReminder.time)}${nextReminder.medicine?.name ? ` · ${nextReminder.medicine.name}` : ''}` : 'No upcoming reminders scheduled.'}
               </Typography>
             </Box>
-            <Box sx={{ minWidth: { md: 260 } }}>
-              <Chip label="Device online" color="success" sx={{ bgcolor: 'rgba(255,255,255,0.16)', color: 'white' }} />
-              <Typography variant="h2" fontWeight={700} sx={{ mt: 1.5 }}>92%</Typography>
-              <Typography sx={{ opacity: 0.9 }}>Weekly adherence</Typography>
-            </Box>
           </Stack>
         </CardContent>
       </Card>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
@@ -182,7 +176,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
@@ -208,30 +202,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'warning.main' }}><NotificationsActiveRoundedIcon /></Avatar>
-                <Box>
-                  <Typography variant="h6">Notifications</Typography>
-                  <Typography variant="body2" color="text.secondary">Recent alerts</Typography>
-                </Box>
-              </Stack>
-              <Stack spacing={1.2}>
-                {notifications.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">No recent alerts</Typography>
-                ) : (
-                  notifications.map((notif) => (
-                    <Typography key={notif._id} variant="body2">
-                      • {notif.message}
-                    </Typography>
-                  ))
-                )}
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
+
       </Grid>
 
       <Grid container spacing={3}>
