@@ -11,6 +11,7 @@ import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlin
 import MedicineManager from '../components/MedicineManager';
 import AlarmManager from '../components/AlarmManager';
 import AlarmWatcher from '../components/AlarmWatcher';
+import DoseHistory from '../components/DoseHistory';
 import api from '../services/api';
 
 export default function DashboardPage() {
@@ -263,6 +264,9 @@ export default function DashboardPage() {
               </Stack>
             </CardContent>
           </Card>
+        </Grid>
+        <Grid item xs={12} lg={5}>
+          <DoseHistory />
         </Grid>
       </Grid>
     </Box>

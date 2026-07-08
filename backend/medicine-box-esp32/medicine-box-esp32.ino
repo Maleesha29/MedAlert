@@ -16,8 +16,8 @@
 // ==========================================
 
 // Wi-Fi Credentials
-#define WIFI_SSID           "myhotspot"
-#define WIFI_PASS           "11111111"
+#define WIFI_SSID           "Ranusha"
+#define WIFI_PASS           "12345678"
 
 // Firebase Settings
 #define FIREBASE_URL        "https://medalert-cc6a7-default-rtdb.asia-southeast1.firebasedatabase.app"
