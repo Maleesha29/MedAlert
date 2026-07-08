@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Typography, Stack, Chip, Grid, Divider, LinearProgress, Avatar } from '@mui/material';
+import { Box, Card, CardContent, Typography, Stack, Chip, Grid, Divider, LinearProgress, Avatar, Button } from '@mui/material';
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -13,11 +13,17 @@ import AlarmManager from '../components/AlarmManager';
 import AlarmWatcher from '../components/AlarmWatcher';
 import api from '../services/api';
 
-
-
 export default function DashboardPage() {
   const [schedule, setSchedule] = useState([]);
   const [nextReminder, setNextReminder] = useState(null);
+  const [deviceStatus, setDeviceStatus] = useState({
+    boxStatus: 'closed',
+    alarmState: 'IDLE',
+    buzzerStatus: false,
+    missedDoseCount: 0,
+    lastDoseTaken: 'No doses taken today',
+  });
+  const [notifications, setNotifications] = useState([]);
   const fmtTime = (t) => (t && dayjs(t, 'HH:mm').isValid() ? dayjs(t, 'HH:mm').format('h:mm A') : '—');
 
   const loadData = async () => {
@@ -39,13 +45,60 @@ export default function DashboardPage() {
     }
   };
 
+  const loadDeviceStatus = async () => {
+    try {
+      const { data } = await api.get('/device/live-status');
+      if (data && data.success && data.status) {
+        setDeviceStatus(data.status);
+      }
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const loadNotifications = async () => {
+    try {
+      const { data } = await api.get('/notifications');
+      if (data && data.success && data.notifications) {
+        setNotifications(data.notifications.slice(0, 5));
+      }
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const handleSnooze = async () => {
+    try {
+      await api.post('/device/snooze');
+      loadDeviceStatus();
+    } catch (err) {
+      console.error('Failed to trigger remote snooze', err);
+    }
+  };
+
   useEffect(() => {
     loadData();
-    const onAlarmsChanged = () => loadData();
-    const onMedsChanged = () => loadData();
+    loadDeviceStatus();
+    loadNotifications();
+
+    const pollInterval = setInterval(() => {
+      loadDeviceStatus();
+      loadNotifications();
+    }, 5000);
+
+    const onAlarmsChanged = () => {
+      loadData();
+      loadNotifications();
+    };
+    const onMedsChanged = () => {
+      loadData();
+      loadNotifications();
+    };
     window.addEventListener('alarms:changed', onAlarmsChanged);
     window.addEventListener('medicines:changed', onMedsChanged);
+
     return () => {
+      clearInterval(pollInterval);
       window.removeEventListener('alarms:changed', onAlarmsChanged);
       window.removeEventListener('medicines:changed', onMedsChanged);
     };
@@ -80,14 +133,50 @@ export default function DashboardPage() {
                 <Avatar sx={{ bgcolor: 'primary.main' }}><MonitorHeartRoundedIcon /></Avatar>
                 <Box>
                   <Typography variant="h6">Device status</Typography>
-                  <Typography variant="body2" color="text.secondary">ESP32 connected</Typography>
+                  <Typography variant="body2" color="text.secondary">ESP32 Smart Box</Typography>
                 </Box>
               </Stack>
-              <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
-                <Chip label="Online" color="success" />
-                <Chip label="WiFi connected" color="info" />
+              <Stack direction="row" spacing={1} sx={{ mb: 1.5 }} flexWrap="wrap" useFlexGap gap={1}>
+                <Chip
+                  label={deviceStatus.boxStatus === 'open' ? 'Lid Open' : 'Lid Closed'}
+                  color={deviceStatus.boxStatus === 'open' ? 'success' : 'default'}
+                  variant="outlined"
+                />
+                <Chip
+                  label={
+                    deviceStatus.alarmState === 'BUZZING'
+                      ? 'Ringing!'
+                      : deviceStatus.alarmState === 'SNOOZING'
+                      ? 'Snoozed'
+                      : 'Idle'
+                  }
+                  color={
+                    deviceStatus.alarmState === 'BUZZING'
+                      ? 'error'
+                      : deviceStatus.alarmState === 'SNOOZING'
+                      ? 'warning'
+                      : 'info'
+                  }
+                />
               </Stack>
-              <Typography variant="body2" color="text.secondary">Battery 86% · Last sync 2 min ago</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                Last Dose: {deviceStatus.lastDoseTaken}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Missed Doses Today: {deviceStatus.missedDoseCount}
+              </Typography>
+              {deviceStatus.alarmState === 'BUZZING' && (
+                <Button
+                  onClick={handleSnooze}
+                  variant="contained"
+                  color="warning"
+                  size="small"
+                  fullWidth
+                  sx={{ mt: 2, fontWeight: 700, animation: 'pulse 1.5s infinite' }}
+                >
+                  Snooze Device Alarm
+                </Button>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -129,9 +218,15 @@ export default function DashboardPage() {
                 </Box>
               </Stack>
               <Stack spacing={1.2}>
-                <Typography variant="body2">• Low pill alert for Vitamin D</Typography>
-                <Typography variant="body2">• Reminder delivered successfully</Typography>
-                <Typography variant="body2">• Caregiver notified</Typography>
+                {notifications.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">No recent alerts</Typography>
+                ) : (
+                  notifications.map((notif) => (
+                    <Typography key={notif._id} variant="body2">
+                      • {notif.message}
+                    </Typography>
+                  ))
+                )}
               </Stack>
             </CardContent>
           </Card>
@@ -169,8 +264,6 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </Grid>
-
-        
       </Grid>
     </Box>
   );

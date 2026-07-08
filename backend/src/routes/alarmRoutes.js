@@ -2,6 +2,7 @@ import express from 'express';
 import Alarm from '../models/Alarm.js';
 import Medicine from '../models/Medicine.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { syncAlarmsToFirebase } from '../services/firebaseService.js';
 
 const router = express.Router();
 
@@ -18,6 +19,10 @@ router.post('/', protect, async (req, res, next) => {
   try {
     const payload = { ...req.body, user: req.user._id };
 
+    if (!payload.medicine) {
+      delete payload.medicine;
+    }
+
     if (payload.medicine) {
       const medicine = await Medicine.findOne({ _id: payload.medicine, user: req.user._id });
       if (!medicine) {
@@ -30,6 +35,7 @@ router.post('/', protect, async (req, res, next) => {
 
     const alarm = await Alarm.create(payload);
     const populatedAlarm = await Alarm.findById(alarm._id).populate('medicine', 'name compartment remainingPillCount');
+    await syncAlarmsToFirebase(req.user._id);
     res.status(201).json({ success: true, alarm: populatedAlarm });
   } catch (error) {
     next(error);
@@ -39,6 +45,10 @@ router.post('/', protect, async (req, res, next) => {
 router.put('/:id', protect, async (req, res, next) => {
   try {
     const payload = req.body;
+
+    if (payload.hasOwnProperty('medicine') && !payload.medicine) {
+      payload.medicine = null;
+    }
 
     if (payload.medicine) {
       const medicine = await Medicine.findOne({ _id: payload.medicine, user: req.user._id });
@@ -56,6 +66,7 @@ router.put('/:id', protect, async (req, res, next) => {
       { new: true }
     ).populate('medicine', 'name compartment remainingPillCount');
 
+    await syncAlarmsToFirebase(req.user._id);
     res.json({ success: true, alarm });
   } catch (error) {
     next(error);
@@ -121,6 +132,7 @@ router.post('/:id/mark-taken', protect, async (req, res, next) => {
 router.delete('/:id', protect, async (req, res, next) => {
   try {
     await Alarm.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+    await syncAlarmsToFirebase(req.user._id);
     res.json({ success: true });
   } catch (error) {
     next(error);

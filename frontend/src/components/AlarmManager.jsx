@@ -10,7 +10,8 @@ const initialForm = {
   time: '',
   enabled: true,
   medicine: '',
-  medicineCompartment: 0,
+  medicineName: '',
+  medicineCompartment: 1,
   notes: ''
 };
 
@@ -69,7 +70,11 @@ export default function AlarmManager() {
     // snooze duration is selected at ring-time (5/10/15min), not stored on the alarm
 
     try {
-      const { data } = await api.post('/alarms', form);
+      const payload = { ...form };
+      if (!payload.medicine) {
+        delete payload.medicine;
+      }
+      const { data } = await api.post('/alarms', payload);
       setAlarms((prev) => [data.alarm, ...prev]);
       setMessageType('success');
       setMessage('Alarm saved successfully.');
@@ -142,28 +147,37 @@ export default function AlarmManager() {
                 </Grid>
                 {/* snooze duration removed — choose snooze when the alarm rings */}
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    select
-                    label="Select medicine"
-                    value={form.medicine}
-                    onChange={(e) => {
-                      const selectedMedicine = medicines.find((medicine) => medicine._id === e.target.value);
-                      setForm({
-                        ...form,
-                        medicine: e.target.value,
-                        medicineCompartment: selectedMedicine?.compartment || form.medicineCompartment
-                      });
-                    }}
-                    helperText={form.medicine ? 'Selected medicine stock will be reduced when you confirm the alarm.' : ''}
-                  >
-                    <MenuItem value="">None</MenuItem>
-                    {medicines.map((medicine) => (
-                      <MenuItem key={medicine._id} value={medicine._id} disabled={medicine.remainingPillCount <= 0}>
-                        {medicine.name} · {medicine.remainingPillCount} left
-                      </MenuItem>
-                    ))}
-                  </TextField>
+                  {(() => {
+                    const matchedMedicine = medicines.find(
+                      (m) => m.name.toLowerCase() === (form.medicineName || '').trim().toLowerCase()
+                    );
+                    const helperText = !(form.medicineName || '').trim()
+                      ? 'Type the name of a medicine to link it.'
+                      : matchedMedicine
+                      ? `Linked to "${matchedMedicine.name}" (Compartment ${matchedMedicine.compartment})`
+                      : 'No matching medicine found. Will schedule as a general alarm.';
+                    
+                    return (
+                      <TextField
+                        fullWidth
+                        label="Medicine Name"
+                        value={form.medicineName || ''}
+                        onChange={(e) => {
+                          const typedName = e.target.value;
+                          const matched = medicines.find(
+                            (m) => m.name.toLowerCase() === typedName.trim().toLowerCase()
+                          );
+                          setForm({
+                            ...form,
+                            medicineName: typedName,
+                            medicine: matched ? matched._id : '',
+                            medicineCompartment: matched ? matched.compartment : form.medicineCompartment
+                          });
+                        }}
+                        helperText={helperText}
+                      />
+                    );
+                  })()}
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField fullWidth label="Medicine compartment" type="number" value={form.medicineCompartment} onChange={(e) => setForm({ ...form, medicineCompartment: Number(e.target.value) })} required />

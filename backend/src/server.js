@@ -11,6 +11,7 @@ import medicineRoutes from './routes/medicineRoutes.js';
 import alarmRoutes from './routes/alarmRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import path from 'path';
+import { startFirebasePolling } from './services/firebaseService.js';
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 2000 }));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, message: 'MedAlert API is running' }));
 app.use('/api/auth', authRoutes);
@@ -41,6 +42,7 @@ app.use((err, _req, res, _next) => {
 mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/medalert')
   .then(() => {
     console.log('MongoDB connected');
+    startFirebasePolling();
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch((error) => console.error('MongoDB connection failed', error));

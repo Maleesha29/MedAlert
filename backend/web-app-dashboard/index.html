@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MedAlert Dashboard</title>
+  
+  <!-- Modern Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons for premium visual aesthetic -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom CSS Variables for Sleek Dark Mode Palette */
+    :root {
+      --bg-color: #0B0F19;
+      --card-bg: rgba(17, 24, 39, 0.7);
+      --card-border: rgba(255, 255, 255, 0.06);
+      
+      --accent-blue: #3B82F6;
+      --accent-blue-glow: rgba(59, 130, 246, 0.35);
+      
+      --accent-green: #10B981;
+      --accent-green-glow: rgba(16, 185, 129, 0.35);
+      
+      --accent-red: #EF4444;
+      --accent-red-glow: rgba(239, 68, 68, 0.35);
+      
+      --accent-orange: #F59E0B;
+      --accent-orange-glow: rgba(245, 158, 11, 0.35);
+      
+      --text-main: #F3F4F6;
+      --text-muted: #9CA3AF;
+    }
+
+    /* Global Reset & Base Styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      background-image: radial-gradient(circle at 50% 10%, rgba(59, 130, 246, 0.08) 0%, transparent 60%);
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Dashboard Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-glow {
+      filter: drop-shadow(0 0 10px var(--accent-blue-glow));
+      color: var(--accent-blue);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(to right, #F3F4F6, #9CA3AF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .connection-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.5rem 1rem;
+      border-radius: 100px;
+      border: 1px solid var(--card-border);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent-red);
+      box-shadow: 0 0 8px var(--accent-red-glow);
+      transition: all 0.3s ease;
+    }
+
+    .status-dot.connected {
+      background-color: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green-glow);
+    }
+
+    /* Responsive Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: 1.2fr 0.8fr;
+      }
+    }
+
+    /* Glassmorphic Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2rem;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Box Lid Status Display */
+    .status-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 0;
+      gap: 1rem;
+      position: relative;
+    }
+
+    .status-circle {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 4px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.01);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .status-circle i {
+      font-size: 3rem;
+      color: var(--text-muted);
+      transition: all 0.5s ease;
+    }
+
+    /* Dynamic open/closed states */
+    .status-circle.closed {
+      border-color: var(--accent-red);
+      box-shadow: 0 0 30px var(--accent-red-glow), inset 0 0 15px var(--accent-red-glow);
+    }
+    .status-circle.closed i {
+      color: var(--accent-red);
+    }
+
+    .status-circle.open {
+      border-color: var(--accent-green);
+      box-shadow: 0 0 30px var(--accent-green-glow), inset 0 0 15px var(--accent-green-glow);
+    }
+    .status-circle.open i {
+      color: var(--accent-green);
+    }
+
+    /* Pulsing Alert Ring for ACTIVE BUZZING */
+    .status-circle.ringing {
+      animation: alert-pulse 1.2s infinite alternate;
+      border-color: var(--accent-orange);
+    }
+    .status-circle.ringing i {
+      color: var(--accent-orange);
+    }
+
+    @keyframes alert-pulse {
+      0% {
+        box-shadow: 0 0 15px var(--accent-orange-glow), inset 0 0 8px var(--accent-orange-glow);
+        transform: scale(1);
+      }
+      100% {
+        box-shadow: 0 0 35px var(--accent-orange-glow), inset 0 0 20px var(--accent-orange-glow);
+        transform: scale(1.04);
+      }
+    }
+
+    .status-text {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .alarm-badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      padding: 0.4rem 0.8rem;
+      border-radius: 100px;
+      color: var(--text-muted);
+      transition: all 0.3s ease;
+    }
+
+    .alarm-badge.active-buzz {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: var(--accent-orange);
+      color: var(--accent-orange);
+    }
+
+    .alarm-badge.active-snooze {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
+    /* Massive Control Buttons */
+    .btn-snooze {
+      width: 100%;
+      background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+      color: white;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 1rem;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .btn-snooze:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+      background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
+    }
+
+    .btn-snooze:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-snooze:disabled {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+      border: 1px solid var(--card-border);
+      cursor: not-allowed;
+    }
+
+    .btn-snooze.pulse {
+      animation: button-pulse 1.5s infinite;
+      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+    }
+
+    @keyframes button-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+      70% { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    }
+
+    /* Schedules Configuration */
+    .schedule-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .schedule-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1rem 1.25rem;
+      transition: all 0.3s ease;
+    }
+
+    .schedule-row:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .schedule-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .schedule-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .schedule-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Custom Modern HTML Time Input */
+    .time-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .time-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 600;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.3s ease, background 0.3s ease;
+    }
+
+    .time-input:focus {
+      border-color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    /* Info / Stats Cards */
+    .stats-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      padding: 1.25rem;
+      border-radius: 16px;
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+    }
+
+    .stat-icon.red {
+      color: var(--accent-red);
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.15);
+    }
+
+    .stat-icon.green {
+      color: var(--accent-green);
+      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.15);
+    }
+
+    .stat-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Header -->
+    <header>
+      <div class="brand-section">
+        <i data-lucide="activity" class="logo-glow"></i>
+        <h1>MedAlert Dashboard</h1>
+      </div>
+      <div class="connection-badge">
+        <div id="conn-dot" class="status-dot"></div>
+        <span id="conn-text">Disconnected</span>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="grid">
+      
+      <!-- Left Panel: Schedules -->
+      <div class="card">
+        <div class="card-title">
+          <i data-lucide="clock"></i>
+          <span>Dose Schedules</span>
+        </div>
+        
+        <div class="schedule-list">
+          
+          <!-- Alarm Slot 0 -->
+          <div class="schedule-row">
+            <div class="schedule-info">
+              <span class="schedule-label">Morning Dose</span>
+              <span class="schedule-sub">Alarm Slot 1</span>
+            </div>
+            <div class="time-input-wrapper">
+              <input type="time" id="time-input-0" class="time-input">
+            </div>
+          </div>
+          
+          <!-- Alarm Slot 1 -->
+          <div class="schedule-row">
+            <div class="schedule-info">
+              <span class="schedule-label">Noon Dose</span>
+              <span class="schedule-sub">Alarm Slot 2</span>
+            </div>
+            <div class="time-input-wrapper">
+              <input type="time" id="time-input-1" class="time-input">
+            </div>
+          </div>
+          
+          <!-- Alarm Slot 2 -->
+          <div class="schedule-row">
+            <div class="schedule-info">
+              <span class="schedule-label">Night Dose</span>
+              <span class="schedule-sub">Alarm Slot 3</span>
+            </div>
+            <div class="time-input-wrapper">
+              <input type="time" id="time-input-2" class="time-input">
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- Right Panel: Status & Control -->
+      <div class="card">
+        <div class="card-title">
+          <i data-lucide="shield-alert"></i>
+          <span>Live Monitor</span>
+        </div>
+        
+        <div class="status-display">
+          <!-- Animated Status Ring -->
+          <div id="status-ring" class="status-circle">
+            <i id="status-icon" data-lucide="box"></i>
+          </div>
+          
+          <div id="status-string" class="status-text">--</div>
+          <div id="alarm-state-badge" class="alarm-badge">SYSTEM LOADED</div>
+          
+          <!-- Big Control Button -->
+          <button id="snooze-btn" class="btn-snooze" disabled>
+            <i data-lucide="bell-off"></i>
+            <span>Snooze Alarm</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Row: Statistics/Analytics Card -->
+    <div class="card">
+      <div class="card-title">
+        <i data-lucide="bar-chart-2"></i>
+        <span>Adherence Analytics</span>
+      </div>
+      
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+        
+        <!-- Last Opened Statistic -->
+        <div class="stat-item">
+          <div class="stat-icon green">
+            <i data-lucide="check-circle-2"></i>
+          </div>
+          <div class="stat-details">
+            <div id="last-taken" class="stat-value">--</div>
+            <div class="stat-label">Last Dose Acknowledged</div>
+          </div>
+        </div>
+        
+        <!-- Missed Dose Statistic -->
+        <div class="stat-item">
+          <div class="stat-icon red">
+            <i data-lucide="alert-octagon"></i>
+          </div>
+          <div class="stat-details">
+            <div id="missed-count" class="stat-value">0</div>
+            <div class="stat-label">Missed Doses (Today)</div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase Script Integration -->
+  <script type="module">
+    // Import modern Firebase JS SDK from official CDN
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Firebase Configurations
+    const firebaseConfig = {
+      databaseURL: "https://medalert-cc6a7-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    // Initialize Database
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // DOM Elements
+    const statusRing = document.getElementById("status-ring");
+    const statusIcon = document.getElementById("status-icon");
+    const statusString = document.getElementById("status-string");
+    const alarmBadge = document.getElementById("alarm-state-badge");
+    const snoozeBtn = document.getElementById("snooze-btn");
+    const missedCountText = document.getElementById("missed-count");
+    const lastTakenText = document.getElementById("last-taken");
+    const connDot = document.getElementById("conn-dot");
+    const connText = document.getElementById("conn-text");
+
+    const timeInputs = [
+      document.getElementById("time-input-0"),
+      document.getElementById("time-input-1"),
+      document.getElementById("time-input-2")
+    ];
+
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Check Firebase Database connection status
+    const connectedRef = ref(db, ".info/connected");
+    onValue(connectedRef, (snap) => {
+      if (snap.val() === true) {
+        connDot.classList.add("connected");
+        connText.innerText = "Firebase Connected";
+        connText.style.color = "var(--accent-green)";
+      } else {
+        connDot.classList.remove("connected");
+        connText.innerText = "Connecting...";
+        connText.style.color = "var(--text-muted)";
+      }
+    });
+
+    // Listen to real-time variables synced from ESP32
+    onValue(ref(db, "/medicineBox"), (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      // 1. Box Open/Closed Reed Switch UI
+      const boxStatus = data.boxStatus || "closed";
+      const isAlarmBuzzing = data.buzzerStatus || false;
+
+      // Update ring status and icons dynamically
+      statusRing.className = "status-circle";
+      statusIcon.removeAttribute("data-lucide");
+
+      if (isAlarmBuzzing) {
+        statusRing.classList.add("ringing");
+        statusIcon.setAttribute("data-lucide", "bell-ring");
+        statusString.innerText = "ALARM RINGING!";
+        statusString.style.color = "var(--accent-orange)";
+      } else if (boxStatus === "open") {
+        statusRing.classList.add("open");
+        statusIcon.setAttribute("data-lucide", "package-open");
+        statusString.innerText = "LID OPEN";
+        statusString.style.color = "var(--accent-green)";
+      } else {
+        statusRing.classList.add("closed");
+        statusIcon.setAttribute("data-lucide", "package");
+        statusString.innerText = "LID CLOSED";
+        statusString.style.color = "var(--accent-red)";
+      }
+
+      // Re-trigger icon rendering
+      lucide.createIcons();
+
+      // 2. Alarm State Badge Display
+      const alarmState = data.alarmState || "IDLE";
+      alarmBadge.innerText = `ALARM STATUS: ${alarmState}`;
+      alarmBadge.className = "alarm-badge";
+
+      if (alarmState === "BUZZING") {
+        alarmBadge.classList.add("active-buzz");
+        snoozeBtn.disabled = false;
+        snoozeBtn.classList.add("pulse");
+      } else if (alarmState === "SNOOZING") {
+        alarmBadge.classList.add("active-snooze");
+        snoozeBtn.disabled = false;
+        snoozeBtn.classList.remove("pulse");
+      } else {
+        snoozeBtn.disabled = true;
+        snoozeBtn.classList.remove("pulse");
+      }
+
+      // 3. Update Statistics
+      missedCountText.innerText = data.missedDoseCount || 0;
+      lastTakenText.innerText = data.lastDoseTaken || "No doses taken today";
+
+      // 4. Update Time Inputs from Firebase values (only if user is not editing them)
+      if (data.alarms) {
+        for (let i = 0; i < 3; i++) {
+          const slot = data.alarms[`slot${i}`];
+          if (slot && document.activeElement !== timeInputs[i]) {
+            const h = String(slot.hour).padStart(2, '0');
+            const m = String(slot.minute).padStart(2, '0');
+            timeInputs[i].value = `${h}:${m}`;
+          }
+        }
+      }
+    });
+
+    // Handle Manual Snooze Button Clicks
+    snoozeBtn.addEventListener("click", () => {
+      console.log("Triggering manual snooze...");
+      set(ref(db, "/medicineBox/manualSnooze"), true)
+        .then(() => {
+          // Immediately disable button temporarily while command transmits
+          snoozeBtn.disabled = true;
+          snoozeBtn.classList.remove("pulse");
+        });
+    });
+
+    // Write Schedule Updates to Firebase immediately when changed in UI
+    timeInputs.forEach((input, index) => {
+      input.addEventListener("change", (e) => {
+        const timeVal = e.target.value; // Formatted as "HH:MM"
+        if (!timeVal) return;
+        
+        const parts = timeVal.split(":");
+        const hour = parseInt(parts[0], 10);
+        const minute = parseInt(parts[1], 10);
+        
+        console.log(`Writing Alarm Slot ${index + 1} to Firebase: ${hour}:${minute}`);
+        
+        set(ref(db, `/medicineBox/alarms/slot${index}/hour`), hour);
+        set(ref(db, `/medicineBox/alarms/slot${index}/minute`), minute);
+      });
+    });
+  </script>
+</body>
+</html>

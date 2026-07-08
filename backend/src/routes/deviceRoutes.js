@@ -1,4 +1,7 @@
 import express from 'express';
+import { protect } from '../middleware/authMiddleware.js';
+import { deviceStatusCache, snoozeDeviceAlarm } from '../services/firebaseService.js';
+
 const router = express.Router();
 
 const deviceApiKey = process.env.DEVICE_API_KEY || 'medalert-device-key';
@@ -11,6 +14,21 @@ const authenticateDevice = (req, res, next) => {
   next();
 };
 
+// Web App Client Endpoints (using protect JWT middleware)
+router.get('/live-status', protect, (req, res) => {
+  res.json({ success: true, status: deviceStatusCache });
+});
+
+router.post('/snooze', protect, async (req, res) => {
+  const success = await snoozeDeviceAlarm();
+  if (success) {
+    res.json({ success: true, message: 'Snooze command sent successfully' });
+  } else {
+    res.status(500).json({ success: false, message: 'Failed to trigger snooze command' });
+  }
+});
+
+// Legacy Device API Endpoints
 router.post('/heartbeat', authenticateDevice, (_req, res) => {
   res.json({ success: true, message: 'Heartbeat received' });
 });
