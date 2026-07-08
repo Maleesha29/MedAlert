@@ -63,34 +63,12 @@ export default function DashboardPage() {
                 {dayjs().format('dddd, MMMM D, YYYY')} · {nextReminder ? `Next reminder is scheduled for ${fmtTime(nextReminder.time)}${nextReminder.medicine?.name ? ` · ${nextReminder.medicine.name}` : ''}` : 'No upcoming reminders scheduled.'}
               </Typography>
             </Box>
-            <Box sx={{ minWidth: { md: 260 } }}>
-              <Chip label="Device online" color="success" sx={{ bgcolor: 'rgba(255,255,255,0.16)', color: 'white' }} />
-              <Typography variant="h2" fontWeight={700} sx={{ mt: 1.5 }}>92%</Typography>
-              <Typography sx={{ opacity: 0.9 }}>Weekly adherence</Typography>
-            </Box>
           </Stack>
         </CardContent>
       </Card>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'primary.main' }}><MonitorHeartRoundedIcon /></Avatar>
-                <Box>
-                  <Typography variant="h6">Device status</Typography>
-                  <Typography variant="body2" color="text.secondary">ESP32 connected</Typography>
-                </Box>
-              </Stack>
-              <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
-                <Chip label="Online" color="success" />
-                <Chip label="WiFi connected" color="info" />
-              </Stack>
-              <Typography variant="body2" color="text.secondary">Battery 86% · Last sync 2 min ago</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+        
 
         <Grid item xs={12} md={4}>
           <Card>
