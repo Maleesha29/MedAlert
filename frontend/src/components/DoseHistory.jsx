@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Box, Button } from '@mui/material';
+import { Card, CardContent, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Box, Button, IconButton, Tooltip } from '@mui/material';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import dayjs from 'dayjs';
 import api from '../services/api';
 
@@ -19,17 +20,41 @@ export default function DoseHistory() {
     }
   };
 
+  const handleClearHistory = async () => {
+    if (!window.confirm('Are you sure you want to clear your dose history?')) return;
+    try {
+      await api.delete('/notifications/history');
+      setHistory([]);
+    } catch (err) {
+      console.error('Failed to clear history:', err);
+    }
+  };
+
   useEffect(() => {
     loadHistory();
     // Refresh history every 30 seconds
     const interval = setInterval(loadHistory, 30000);
-    return () => clearInterval(interval);
+    const onHistoryChanged = () => loadHistory();
+    window.addEventListener('history:changed', onHistoryChanged);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('history:changed', onHistoryChanged);
+    };
   }, []);
 
   return (
     <Card sx={{ height: '100%' }}>
       <CardContent>
-        <Typography variant="h6" sx={{ mb: 2 }}>Dose History</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6">Dose History</Typography>
+          {history.length > 0 && (
+            <Tooltip title="Clear History">
+              <IconButton size="small" onClick={handleClearHistory} color="error">
+                <DeleteOutlineRoundedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Box>
         {history.length === 0 ? (
           <Typography variant="body2" color="text.secondary">No dose history available.</Typography>
         ) : (

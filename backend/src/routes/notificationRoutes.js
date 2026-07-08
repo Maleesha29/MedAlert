@@ -27,6 +27,18 @@ router.get('/history', protect, async (req, res, next) => {
   }
 });
 
+router.delete('/history', protect, async (req, res, next) => {
+  try {
+    await Notification.deleteMany({
+      user: req.user._id,
+      type: { $in: ['dose_taken', 'dose_missed'] }
+    });
+    res.json({ success: true, message: 'History cleared' });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.patch('/:id/read', protect, async (req, res, next) => {
   try {
     const notification = await Notification.findOneAndUpdate({ _id: req.params.id, user: req.user._id }, { isRead: true }, { new: true });

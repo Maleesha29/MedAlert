@@ -137,6 +137,7 @@ export default function AlarmWatcher() {
     dismissCurrent();
     // notify other components (medicine list) to refresh pill counts
     try { window.dispatchEvent(new CustomEvent('medicines:changed')); } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent('history:changed')); } catch (e) {}
   };
 
   const handleSnooze = (minutes) => {

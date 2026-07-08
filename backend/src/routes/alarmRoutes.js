@@ -1,6 +1,7 @@
 import express from 'express';
 import Alarm from '../models/Alarm.js';
 import Medicine from '../models/Medicine.js';
+import Notification from '../models/Notification.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { syncAlarmsToFirebase } from '../services/firebaseService.js';
 
@@ -95,6 +96,13 @@ router.post('/:id/taken', protect, async (req, res, next) => {
       { new: true }
     ).populate('medicine', 'name compartment remainingPillCount');
 
+    await Notification.create({
+      user: req.user._id,
+      type: 'dose_taken',
+      title: 'Dose Taken',
+      message: `You took ${updatedAlarm.medicine ? updatedAlarm.medicine.name : updatedAlarm.name}.`,
+    });
+
     res.json({ success: true, alarm: updatedAlarm });
   } catch (error) {
     next(error);
@@ -122,6 +130,13 @@ router.post('/:id/mark-taken', protect, async (req, res, next) => {
       { status: 'completed' },
       { new: true }
     ).populate('medicine', 'name compartment remainingPillCount');
+
+    await Notification.create({
+      user: req.user._id,
+      type: 'dose_taken',
+      title: 'Dose Taken',
+      message: `You took ${updatedAlarm.medicine ? updatedAlarm.medicine.name : updatedAlarm.name}.`,
+    });
 
     res.json({ success: true, alarm: updatedAlarm });
   } catch (error) {
