@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Box, Button, IconButton, Tooltip } from '@mui/material';
+import { Card, CardContent, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
@@ -9,6 +9,8 @@ import api from '../services/api';
 export default function DoseHistory() {
   const [history, setHistory] = useState([]);
   const [showAll, setShowAll] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const loadHistory = async () => {
     try {
       const { data } = await api.get('/notifications/history');
@@ -21,12 +23,15 @@ export default function DoseHistory() {
   };
 
   const handleClearHistory = async () => {
-    if (!window.confirm('Are you sure you want to clear your dose history?')) return;
+    setDeleting(true);
     try {
       await api.delete('/notifications/history');
       setHistory([]);
+      setShowDeleteConfirm(false);
     } catch (err) {
       console.error('Failed to clear history:', err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -49,7 +54,7 @@ export default function DoseHistory() {
           <Typography variant="h6">Dose History</Typography>
           {history.length > 0 && (
             <Tooltip title="Clear History">
-              <IconButton size="small" onClick={handleClearHistory} color="error">
+              <IconButton size="small" onClick={() => setShowDeleteConfirm(true)} color="error">
                 <DeleteOutlineRoundedIcon fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -98,6 +103,21 @@ export default function DoseHistory() {
           </Box>
         )}
       </CardContent>
+
+      <Dialog open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} fullWidth maxWidth="xs">
+        <DialogTitle>Clear Dose History</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to clear all your dose history? This will remove all records permanently and cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button onClick={() => setShowDeleteConfirm(false)} color="inherit">Cancel</Button>
+          <Button onClick={handleClearHistory} color="error" variant="contained" disabled={deleting}>
+            {deleting ? 'Clearing…' : 'Clear History'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }
