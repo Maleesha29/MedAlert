@@ -147,15 +147,15 @@ export default function DashboardPage() {
                     deviceStatus.alarmState === 'BUZZING'
                       ? 'Ringing!'
                       : deviceStatus.alarmState === 'SNOOZING'
-                      ? 'Snoozed'
-                      : 'Idle'
+                        ? 'Snoozed'
+                        : 'Idle'
                   }
                   color={
                     deviceStatus.alarmState === 'BUZZING'
                       ? 'error'
                       : deviceStatus.alarmState === 'SNOOZING'
-                      ? 'warning'
-                      : 'info'
+                        ? 'warning'
+                        : 'info'
                   }
                 />
               </Stack>
