@@ -2,10 +2,13 @@
   "name": "medalert",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["client", "server"],
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
-    "build": "npm run build --workspace=client && npm run build --workspace=server"
+    "dev": "node init && concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
+    "build": "node init && npm run build --workspace=client && npm run build --workspace=server"
   },
   "devDependencies": {
     "concurrently": "^8.0.0"

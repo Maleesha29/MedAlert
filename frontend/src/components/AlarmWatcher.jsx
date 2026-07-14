@@ -18,6 +18,7 @@ export default function AlarmWatcher() {
 
   const firedRef = useRef(new Set());       // keys already fired this minute, avoids re-triggering
   const snoozedUntilRef = useRef({});        // alarmId -> dayjs timestamp to re-check after
+  const snoozeCountRef = useRef({});         // alarmId -> number of auto-snoozes
   const audioCtxRef = useRef(null);
   const beepIntervalRef = useRef(null);
 
@@ -119,6 +120,24 @@ export default function AlarmWatcher() {
     setMuted(false);
   };
 
+
+  useEffect(() => {
+    if (!current) return;
+    
+    const timeout = setTimeout(() => {
+      const count = snoozeCountRef.current[current._id] || 0;
+      if (count < 3) {
+        snoozeCountRef.current[current._id] = count + 1;
+        handleSnooze(5);
+      } else {
+        delete snoozeCountRef.current[current._id];
+        dismissCurrent();
+      }
+    }, 60000);
+    
+    return () => clearTimeout(timeout);
+  }, [current]);
+
   const handleTaken = async () => {
     if (!current) return;
     try {
@@ -137,6 +156,7 @@ export default function AlarmWatcher() {
     dismissCurrent();
     // notify other components (medicine list) to refresh pill counts
     try { window.dispatchEvent(new CustomEvent('medicines:changed')); } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent('history:changed')); } catch (e) {}
   };
 
   const handleSnooze = (minutes) => {

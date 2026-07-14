@@ -147,37 +147,41 @@ export default function AlarmManager() {
                 </Grid>
                 {/* snooze duration removed — choose snooze when the alarm rings */}
                 <Grid item xs={12} sm={6}>
-                  {(() => {
-                    const matchedMedicine = medicines.find(
-                      (m) => m.name.toLowerCase() === (form.medicineName || '').trim().toLowerCase()
-                    );
-                    const helperText = !(form.medicineName || '').trim()
-                      ? 'Type the name of a medicine to link it.'
-                      : matchedMedicine
-                      ? `Linked to "${matchedMedicine.name}" (Compartment ${matchedMedicine.compartment})`
-                      : 'No matching medicine found. Will schedule as a general alarm.';
-                    
-                    return (
-                      <TextField
-                        fullWidth
-                        label="Medicine Name"
-                        value={form.medicineName || ''}
-                        onChange={(e) => {
-                          const typedName = e.target.value;
-                          const matched = medicines.find(
-                            (m) => m.name.toLowerCase() === typedName.trim().toLowerCase()
-                          );
-                          setForm({
-                            ...form,
-                            medicineName: typedName,
-                            medicine: matched ? matched._id : '',
-                            medicineCompartment: matched ? matched.compartment : form.medicineCompartment
-                          });
-                        }}
-                        helperText={helperText}
-                      />
-                    );
-                  })()}
+                  <TextField
+                    select
+                    fullWidth
+                    label="Medicine Name"
+                    value={form.medicine || ''}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const matched = medicines.find((m) => m._id === selectedId);
+                      if (matched) {
+                        setForm({
+                          ...form,
+                          medicine: matched._id,
+                          medicineName: matched.name,
+                          medicineCompartment: matched.compartment
+                        });
+                      } else {
+                        setForm({
+                          ...form,
+                          medicine: '',
+                          medicineName: '',
+                          medicineCompartment: 1
+                        });
+                      }
+                    }}
+                    helperText={form.medicine ? 'Medicine linked to alarm.' : 'Select a medicine (Optional)'}
+                  >
+                    <MenuItem value="">
+                      <em>None (General Alarm)</em>
+                    </MenuItem>
+                    {medicines.map((m) => (
+                      <MenuItem key={m._id} value={m._id}>
+                        {m.name} (Compartment {m.compartment})
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField fullWidth label="Medicine compartment" type="number" value={form.medicineCompartment} onChange={(e) => setForm({ ...form, medicineCompartment: Number(e.target.value) })} required />

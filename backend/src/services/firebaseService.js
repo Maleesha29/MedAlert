@@ -2,6 +2,8 @@ import Alarm from '../models/Alarm.js';
 import Medicine from '../models/Medicine.js';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
+import Patient from '../models/Patient.js';
+import { sendMissedDoseEmail } from './emailService.js';
 
 const getFirebaseConfig = () => {
   const url = process.env.FIREBASE_URL;
@@ -238,6 +240,19 @@ async function pollFirebase() {
           }
         });
         console.log(`[FirebasePoll] Created missed dose notification for user ${targetUserId}`);
+
+        try {
+          const patient = await Patient.findOne({ user: targetUserId }).populate('caregiver');
+          let caregiverEmail = patient?.caregiverInfo?.email;
+          if (!caregiverEmail && patient?.caregiver) {
+            caregiverEmail = patient.caregiver.email;
+          }
+          if (caregiverEmail) {
+            await sendMissedDoseEmail(caregiverEmail, patient?.fullName || 'The patient', missedDoseCount);
+          }
+        } catch (emailErr) {
+          console.error('[FirebasePoll] Error sending missed dose email:', emailErr);
+        }
       }
     }
 
