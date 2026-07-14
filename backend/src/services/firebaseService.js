@@ -184,7 +184,15 @@ async function pollFirebase() {
                 user: alarm.user,
                 type: 'dose_taken',
                 title: 'Dose Taken',
-                message: `Dose for "${alarm.name}" (Compartment ${medicineCompartment}) was physically taken.`
+                message: `Dose for "${alarm.name}" (Compartment ${medicineCompartment}) was physically taken.`,
+                metadata: {
+                  alarmId: alarm._id,
+                  alarmName: alarm.name,
+                  medicineId: alarm.medicine || null,
+                  medicineName: medicineName || alarm.name,
+                  compartment: medicineCompartment,
+                  status: 'taken'
+                }
               });
             }
           }
@@ -223,7 +231,11 @@ async function pollFirebase() {
           user: targetUserId,
           type: 'dose_missed',
           title: 'Dose Missed Alert',
-          message: `A scheduled medicine dose was missed today. Total missed today: ${missedDoseCount}.`
+          message: `A scheduled medicine dose was missed today. Total missed today: ${missedDoseCount}.`,
+          metadata: {
+            missedDoseCount,
+            status: 'missed'
+          }
         });
         console.log(`[FirebasePoll] Created missed dose notification for user ${targetUserId}`);
       }

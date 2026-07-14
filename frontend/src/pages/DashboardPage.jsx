@@ -8,6 +8,7 @@ import MonitorHeartRoundedIcon from '@mui/icons-material/MonitorHeartRounded';
 import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
 import BatteryChargingFullRoundedIcon from '@mui/icons-material/BatteryChargingFullRounded';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import MedicineManager from '../components/MedicineManager';
 import AlarmManager from '../components/AlarmManager';
 import AlarmWatcher from '../components/AlarmWatcher';
@@ -24,6 +25,7 @@ export default function DashboardPage() {
     lastDoseTaken: 'No doses taken today',
   });
   const [notifications, setNotifications] = useState([]);
+  const [history, setHistory] = useState([]);
   const fmtTime = (t) => (t && dayjs(t, 'HH:mm').isValid() ? dayjs(t, 'HH:mm').format('h:mm A') : '—');
 
   const loadData = async () => {
@@ -67,6 +69,17 @@ export default function DashboardPage() {
     }
   };
 
+  const loadHistory = async () => {
+    try {
+      const { data } = await api.get('/notifications/history');
+      if (data && data.success && data.history) {
+        setHistory(data.history);
+      }
+    } catch (err) {
+      // ignore
+    }
+  };
+
   const handleSnooze = async () => {
     try {
       await api.post('/device/snooze');
@@ -80,19 +93,23 @@ export default function DashboardPage() {
     loadData();
     loadDeviceStatus();
     loadNotifications();
+    loadHistory();
 
     const pollInterval = setInterval(() => {
       loadDeviceStatus();
       loadNotifications();
+      loadHistory();
     }, 5000);
 
     const onAlarmsChanged = () => {
       loadData();
       loadNotifications();
+      loadHistory();
     };
     const onMedsChanged = () => {
       loadData();
       loadNotifications();
+      loadHistory();
     };
     window.addEventListener('alarms:changed', onAlarmsChanged);
     window.addEventListener('medicines:changed', onMedsChanged);
@@ -260,6 +277,60 @@ export default function DashboardPage() {
                     </Stack>
                   </Box>
                 ))}
+              </Stack>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} lg={5}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
+                <Avatar sx={{ bgcolor: 'info.main' }}><HistoryRoundedIcon /></Avatar>
+                <Box>
+                  <Typography variant="h6">Dose history</Typography>
+                  <Typography variant="body2" color="text.secondary">Taken and missed doses</Typography>
+                </Box>
+              </Stack>
+              <Stack spacing={1.5} sx={{ maxHeight: 360, overflow: 'auto', pr: 0.5 }}>
+                {history.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">No dose history yet</Typography>
+                ) : (
+                  history.map((item) => {
+                    const isTaken = item.type === 'dose_taken';
+                    const title = item.metadata?.medicineName || item.metadata?.alarmName || item.title;
+                    const timeLabel = dayjs(item.createdAt).isValid()
+                      ? dayjs(item.createdAt).format('MMM D, h:mm A')
+                      : '—';
+
+                    return (
+                      <Box
+                        key={item._id}
+                        sx={{
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 2,
+                          p: 1.5,
+                          bgcolor: 'background.paper'
+                        }}
+                      >
+                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+                          <Box>
+                            <Typography fontWeight={700}>{title}</Typography>
+                            <Typography variant="body2" color="text.secondary">{item.message}</Typography>
+                            <Typography variant="caption" color="text.secondary">{timeLabel}</Typography>
+                          </Box>
+                          <Chip
+                            label={isTaken ? 'Taken' : 'Missed'}
+                            color={isTaken ? 'success' : 'error'}
+                            size="small"
+                            variant="outlined"
+                          />
+                        </Stack>
+                      </Box>
+                    );
+                  })
+                )}
               </Stack>
             </CardContent>
           </Card>

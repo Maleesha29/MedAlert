@@ -1,10 +1,28 @@
 import express from 'express';
 import Alarm from '../models/Alarm.js';
 import Medicine from '../models/Medicine.js';
+import Notification from '../models/Notification.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { syncAlarmsToFirebase } from '../services/firebaseService.js';
 
 const router = express.Router();
+
+const createDoseTakenNotification = async (alarm) => {
+  await Notification.create({
+    user: alarm.user,
+    type: 'dose_taken',
+    title: 'Dose Taken',
+    message: `Dose for "${alarm.name}" was marked as taken.`,
+    metadata: {
+      alarmId: alarm._id,
+      alarmName: alarm.name,
+      medicineId: alarm.medicine || null,
+      medicineName: alarm.medicine?.name || alarm.name,
+      compartment: alarm.medicineCompartment,
+      status: 'taken'
+    }
+  });
+};
 
 router.get('/', protect, async (req, res, next) => {
   try {
@@ -95,6 +113,8 @@ router.post('/:id/taken', protect, async (req, res, next) => {
       { new: true }
     ).populate('medicine', 'name compartment remainingPillCount');
 
+    await createDoseTakenNotification(updatedAlarm);
+
     res.json({ success: true, alarm: updatedAlarm });
   } catch (error) {
     next(error);
@@ -122,6 +142,8 @@ router.post('/:id/mark-taken', protect, async (req, res, next) => {
       { status: 'completed' },
       { new: true }
     ).populate('medicine', 'name compartment remainingPillCount');
+
+    await createDoseTakenNotification(updatedAlarm);
 
     res.json({ success: true, alarm: updatedAlarm });
   } catch (error) {
