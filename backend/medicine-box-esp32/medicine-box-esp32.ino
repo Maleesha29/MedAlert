@@ -16,8 +16,8 @@
 // ==========================================
 
 // Wi-Fi Credentials
-#define WIFI_SSID           "myhotspot"
-#define WIFI_PASS           "11111111"
+#define WIFI_SSID           "Ranusha"
+#define WIFI_PASS           "12345678"
 
 // Firebase Settings
 #define FIREBASE_URL        "https://medalert-cc6a7-default-rtdb.asia-southeast1.firebasedatabase.app"
@@ -38,7 +38,7 @@ int alarmMinutes[3] = {0, 0, 0};
 // State Machine Settings
 const unsigned long BUZZ_DURATION   = 60000;   // 1 minute (60,000 ms)
 const unsigned long SNOOZE_DURATION = 300000;  // 5 minutes (300,000 ms)
-const int MAX_SNOOZES               = 2;       // Max 2 snoozes (total 3 buzz cycles)
+const int MAX_SNOOZES               = 3;       // Max 3 snoozes (total 4 buzz cycles)
 
 // ==========================================
 // SYSTEM STATE VARIABLES
@@ -343,7 +343,7 @@ void loop() {
           updateFirebaseString("/medicineBox/alarmState", "SNOOZING");
           updateFirebaseBool("/medicineBox/buzzerStatus", false);
         } else {
-          Serial.println("[Alarm] 3 buzz cycles completed with no response. Dose MISSED.");
+          Serial.println("[Alarm] 4 buzz cycles completed with no response. Dose MISSED.");
           alarmState = STATE_IDLE;
           missedDoseCount++;
           
