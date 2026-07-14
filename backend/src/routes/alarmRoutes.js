@@ -113,7 +113,12 @@ router.post('/:id/taken', protect, async (req, res, next) => {
       { new: true }
     ).populate('medicine', 'name compartment remainingPillCount');
 
-    await createDoseTakenNotification(updatedAlarm);
+    await Notification.create({
+      user: req.user._id,
+      type: 'dose_taken',
+      title: 'Dose Taken',
+      message: `You took ${updatedAlarm.medicine ? updatedAlarm.medicine.name : updatedAlarm.name}.`,
+    });
 
     res.json({ success: true, alarm: updatedAlarm });
   } catch (error) {
@@ -143,7 +148,12 @@ router.post('/:id/mark-taken', protect, async (req, res, next) => {
       { new: true }
     ).populate('medicine', 'name compartment remainingPillCount');
 
-    await createDoseTakenNotification(updatedAlarm);
+    await Notification.create({
+      user: req.user._id,
+      type: 'dose_taken',
+      title: 'Dose Taken',
+      message: `You took ${updatedAlarm.medicine ? updatedAlarm.medicine.name : updatedAlarm.name}.`,
+    });
 
     res.json({ success: true, alarm: updatedAlarm });
   } catch (error) {

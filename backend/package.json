@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node src/server.js",
-    "build": "echo \"No build step required\""
+    "dev": "node init && node src/server.js",
+    "build": "node init && echo \"No build step required\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.0",

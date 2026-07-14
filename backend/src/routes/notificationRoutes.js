@@ -15,14 +15,25 @@ router.get('/', protect, async (req, res, next) => {
 
 router.get('/history', protect, async (req, res, next) => {
   try {
-    const history = await Notification.find({
+    const history = await Notification.find({ 
       user: req.user._id,
       type: { $in: ['dose_taken', 'dose_missed'] }
     })
-      .sort({ createdAt: -1 })
-      .limit(30);
-
+    .sort({ createdAt: -1 })
+    .limit(50);
     res.json({ success: true, history });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/history', protect, async (req, res, next) => {
+  try {
+    await Notification.deleteMany({
+      user: req.user._id,
+      type: { $in: ['dose_taken', 'dose_missed'] }
+    });
+    res.json({ success: true, message: 'History cleared' });
   } catch (error) {
     next(error);
   }

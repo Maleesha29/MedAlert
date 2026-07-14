@@ -5,13 +5,13 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 dayjs.extend(customParseFormat);
 import MedicationRoundedIcon from '@mui/icons-material/MedicationRounded';
 import MonitorHeartRoundedIcon from '@mui/icons-material/MonitorHeartRounded';
-import NotificationsActiveRoundedIcon from '@mui/icons-material/NotificationsActiveRounded';
 import BatteryChargingFullRoundedIcon from '@mui/icons-material/BatteryChargingFullRounded';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import MedicineManager from '../components/MedicineManager';
 import AlarmManager from '../components/AlarmManager';
 import AlarmWatcher from '../components/AlarmWatcher';
+import DoseHistory from '../components/DoseHistory';
 import api from '../services/api';
 
 export default function DashboardPage() {
@@ -133,17 +133,12 @@ export default function DashboardPage() {
                 {dayjs().format('dddd, MMMM D, YYYY')} · {nextReminder ? `Next reminder is scheduled for ${fmtTime(nextReminder.time)}${nextReminder.medicine?.name ? ` · ${nextReminder.medicine.name}` : ''}` : 'No upcoming reminders scheduled.'}
               </Typography>
             </Box>
-            <Box sx={{ minWidth: { md: 260 } }}>
-              <Chip label="Device online" color="success" sx={{ bgcolor: 'rgba(255,255,255,0.16)', color: 'white' }} />
-              <Typography variant="h2" fontWeight={700} sx={{ mt: 1.5 }}>92%</Typography>
-              <Typography sx={{ opacity: 0.9 }}>Weekly adherence</Typography>
-            </Box>
           </Stack>
         </CardContent>
       </Card>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
@@ -198,7 +193,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
@@ -224,30 +219,7 @@ export default function DashboardPage() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'warning.main' }}><NotificationsActiveRoundedIcon /></Avatar>
-                <Box>
-                  <Typography variant="h6">Notifications</Typography>
-                  <Typography variant="body2" color="text.secondary">Recent alerts</Typography>
-                </Box>
-              </Stack>
-              <Stack spacing={1.2}>
-                {notifications.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">No recent alerts</Typography>
-                ) : (
-                  notifications.map((notif) => (
-                    <Typography key={notif._id} variant="body2">
-                      • {notif.message}
-                    </Typography>
-                  ))
-                )}
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
+
       </Grid>
 
       <Grid container spacing={3}>
@@ -281,59 +253,8 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </Grid>
-
         <Grid item xs={12} lg={5}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'info.main' }}><HistoryRoundedIcon /></Avatar>
-                <Box>
-                  <Typography variant="h6">Dose history</Typography>
-                  <Typography variant="body2" color="text.secondary">Taken and missed doses</Typography>
-                </Box>
-              </Stack>
-              <Stack spacing={1.5} sx={{ maxHeight: 360, overflow: 'auto', pr: 0.5 }}>
-                {history.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">No dose history yet</Typography>
-                ) : (
-                  history.map((item) => {
-                    const isTaken = item.type === 'dose_taken';
-                    const title = item.metadata?.medicineName || item.metadata?.alarmName || item.title;
-                    const timeLabel = dayjs(item.createdAt).isValid()
-                      ? dayjs(item.createdAt).format('MMM D, h:mm A')
-                      : '—';
-
-                    return (
-                      <Box
-                        key={item._id}
-                        sx={{
-                          border: '1px solid',
-                          borderColor: 'divider',
-                          borderRadius: 2,
-                          p: 1.5,
-                          bgcolor: 'background.paper'
-                        }}
-                      >
-                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
-                          <Box>
-                            <Typography fontWeight={700}>{title}</Typography>
-                            <Typography variant="body2" color="text.secondary">{item.message}</Typography>
-                            <Typography variant="caption" color="text.secondary">{timeLabel}</Typography>
-                          </Box>
-                          <Chip
-                            label={isTaken ? 'Taken' : 'Missed'}
-                            color={isTaken ? 'success' : 'error'}
-                            size="small"
-                            variant="outlined"
-                          />
-                        </Stack>
-                      </Box>
-                    );
-                  })
-                )}
-              </Stack>
-            </CardContent>
-          </Card>
+          <DoseHistory />
         </Grid>
       </Grid>
     </Box>
